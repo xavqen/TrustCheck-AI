@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 150 30% 99%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --primary: 199 89% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 199 92% 95%;
+  --accent-foreground: 205 90% 24%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 199 89% 48%;
+  --radius: 1rem;
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 10%;
+  --card-foreground: 210 40% 98%;
+  --primary: 190 95% 42%;
+  --primary-foreground: 222 47% 7%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 199 72% 14%;
+  --accent-foreground: 190 90% 86%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217 33% 18%;
+  --input: 217 33% 18%;
+  --ring: 190 95% 42%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: radial-gradient(circle at top left, hsl(var(--accent)), transparent 28rem), hsl(var(--background));
+  color: hsl(var(--foreground));
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: #0EA5E9;
+  color: hsl(var(--primary-foreground));
+}
+
+.container-px {
+  @apply px-4 sm:px-6 lg:px-8;
+}
+
+.safe-gradient {
+  background: linear-gradient(135deg, rgba(14,165,233,0.18), rgba(20,184,166,0.13));
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+button, input, textarea, select {
+  font: inherit;
+}
+
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.responsive-card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+}
+
+.mobile-tap-target {
+  min-height: 44px;
+}
+
+@media (max-width: 640px) {
+  .shadow-glow {
+    box-shadow: 0 0 36px rgba(14,165,233,0.14);
+  }
+}
+
+
+@layer utilities {
+  .page-shell {
+    @apply container-px mx-auto w-full max-w-7xl py-8 sm:py-10 lg:py-12;
+  }
+
+  .page-heading {
+    @apply text-balance text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl;
+  }
+
+  .page-description {
+    @apply max-w-2xl text-pretty text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7;
+  }
+
+  .responsive-actions {
+    display: grid;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .responsive-actions > * {
+    width: 100%;
+  }
+
+  @media (min-width: 430px) {
+    .responsive-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 640px) {
+    .responsive-actions {
+      display: flex;
+      width: auto;
+      flex-wrap: wrap;
+    }
+
+    .responsive-actions > * {
+      width: auto;
+    }
+  }
+
+  .responsive-stat-grid {
+    @apply grid gap-3 sm:grid-cols-2 lg:grid-cols-4;
+  }
+
+  .responsive-two-col {
+    @apply grid min-w-0 gap-6 lg:grid-cols-2;
+  }
+
+  .responsive-panel {
+    @apply min-w-0 overflow-hidden rounded-3xl border bg-card text-card-foreground shadow-sm;
+  }
+
+  .touch-scroll {
+    @apply overflow-x-auto overscroll-x-contain scroll-smooth hide-scrollbar;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-card-pad {
+    @apply p-4 sm:p-5 md:p-6;
+  }
+
+  .text-fluid-title {
+    font-size: clamp(1.875rem, 7vw, 3.75rem);
+    line-height: 1.05;
+  }
+
+  .text-fluid-section {
+    font-size: clamp(1.5rem, 5vw, 2.25rem);
+    line-height: 1.12;
+  }
+}
+
+pre, code {
+  max-width: 100%;
+}
+
+pre {
+  -webkit-overflow-scrolling: touch;
+}
+
+.card-mobile-stack {
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .container-px {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 36px rgba(14,165,233,0.14);
+  }
+
+  .mobile-full > * {
+    width: 100%;
+  }
+}
+
+@media (max-width: 390px) {
+  .container-px {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .tiny-hide {
+    display: none !important;
+  }
+}

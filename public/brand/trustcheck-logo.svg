@@ -1,0 +1,24 @@
+<svg width="920" height="220" viewBox="0 0 920 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shield" x1="40" y1="32" x2="190" y2="194" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1F5E"/>
+      <stop offset="0.58" stop-color="#0E7BFF"/>
+      <stop offset="1" stop-color="#16C6C3"/>
+    </linearGradient>
+    <linearGradient id="check" x1="76" y1="112" x2="154" y2="76" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#16C6C3"/>
+      <stop offset="1" stop-color="#20D6A1"/>
+    </linearGradient>
+    <linearGradient id="ai" x1="770" y1="78" x2="900" y2="78" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#16C6C3"/>
+    </linearGradient>
+  </defs>
+  <rect width="920" height="220" rx="34" fill="white"/>
+  <path d="M110 28L170 53V103C170 149 145 187 110 206C75 187 50 149 50 103V53L110 28Z" stroke="url(#shield)" stroke-width="16" stroke-linejoin="round"/>
+  <path d="M78 119L100 141L149 90" stroke="url(#check)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="160" y="43" width="18" height="18" rx="4" fill="#16C6C3"/>
+  <rect x="162" y="72" width="14" height="14" rx="3" fill="#0EA5E9"/>
+  <text x="230" y="140" font-family="Inter, Arial, sans-serif" font-size="82" font-weight="800" fill="#0B1F5E" letter-spacing="-3">TrustCheck</text>
+  <text x="768" y="140" font-family="Inter, Arial, sans-serif" font-size="82" font-weight="800" fill="url(#ai)" letter-spacing="-3">AI</text>
+</svg>

@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum RiskLevel {
+  SAFE
+  SUSPICIOUS
+  DANGEROUS
+}
+
+enum CheckType {
+  URL
+  WHATSAPP
+  EMAIL
+  JOB_OFFER
+  LOAN_OFFER
+  CRYPTO_INVESTMENT
+  SHOPPING_SELLER
+  QR_TEXT
+  SCREENSHOT_TEXT
+  OTHER
+}
+
+enum Plan {
+  FREE
+  PRO
+  FAMILY
+  BUSINESS
+}
+
+enum BillingRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum BillingProvider {
+  MANUAL
+  RAZORPAY
+}
+
+enum BillingMode {
+  MANUAL_REQUEST
+  ONE_TIME
+  SUBSCRIPTION
+}
+
+enum PaymentStatus {
+  CREATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  CANCELLED
+  REFUNDED
+  AUTHENTICATED
+  ACTIVE
+  COMPLETED
+}
+
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String        @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          Role          @default(USER)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  scamChecks    ScamCheck[]
+  scamReports   ScamReport[]
+  reportVotes   ReportVote[]
+  feedback      Feedback[]
+  subscriptions   Subscription[]
+  billingRequests BillingRequest[]
+  paymentTransactions PaymentTransaction[]
+  billingInvoices BillingInvoice[]
+  apiUsage        ApiUsage[]
+  apiKeys         ApiKey[]
+  alertSubscriptions AlertSubscription[]
+  integrationLeads   IntegrationLead[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model ScamCheck {
+  id                String     @id @default(cuid())
+  userId            String?
+  type              CheckType
+  input             String
+  normalizedInput   String?
+  shareToken        String?    @unique
+  riskLevel         RiskLevel
+  trustScore        Int
+  redFlags          Json
+  reasons           Json
+  recommendedAction String
+  safeReply         String
+  reportGuidance    String
+  sourceIpHash      String?
+  createdAt         DateTime   @default(now())
+  user              User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  reports           ScamReport[]
+
+  @@index([userId, createdAt])
+  @@index([riskLevel])
+  @@index([createdAt])
+}
+
+model ScamReport {
+  id            String       @id @default(cuid())
+  userId        String?
+  checkId       String?
+  publicSlug    String?      @unique
+  scamType      String
+  platform      String
+  country       String
+  description   String
+  screenshotUrl String?
+  isPublic      Boolean      @default(false)
+  status        String       @default("submitted")
+  upvotes       Int          @default(0)
+  views         Int          @default(0)
+  moderatedAt   DateTime?
+  moderatedBy   String?
+  createdAt     DateTime     @default(now())
+  user          User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  check         ScamCheck?   @relation(fields: [checkId], references: [id], onDelete: SetNull)
+  votes         ReportVote[]
+
+  @@index([country, scamType])
+  @@index([isPublic, status, createdAt])
+  @@index([publicSlug])
+  @@index([createdAt])
+}
+
+model ReportVote {
+  id        String     @id @default(cuid())
+  reportId  String
+  userId    String?
+  voterHash String
+  createdAt DateTime   @default(now())
+  report    ScamReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([reportId, voterHash])
+  @@index([reportId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model Subscription {
+  id                     String          @id @default(cuid())
+  userId                 String
+  plan                   Plan            @default(FREE)
+  status                 String          @default("active")
+  provider               BillingProvider @default(MANUAL)
+  providerSubscriptionId String?         @unique
+  providerCustomerId     String?
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean         @default(false)
+  providerStatus         String?
+  nextBillingAt          DateTime?
+  cancellationRequestedAt DateTime?
+  cancelledAt            DateTime?
+  pausedAt               DateTime?
+  lastSyncedAt           DateTime?
+  startedAt              DateTime        @default(now())
+  endsAt                 DateTime?
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices               BillingInvoice[]
+
+  @@index([userId, status])
+  @@index([provider, providerSubscriptionId])
+}
+
+model RazorpayPlan {
+  id             String   @id @default(cuid())
+  plan           Plan
+  providerPlanId String   @unique
+  amount         Int
+  currency       String   @default("INR")
+  period         String   @default("monthly")
+  interval       Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([plan, period, interval])
+  @@index([plan])
+}
+
+model PaymentTransaction {
+  id                       String          @id @default(cuid())
+  userId                   String
+  plan                     Plan
+  provider                 BillingProvider @default(RAZORPAY)
+  mode                     BillingMode
+  status                   PaymentStatus   @default(CREATED)
+  amount                   Int
+  currency                 String          @default("INR")
+  receipt                  String?         @unique
+  razorpayOrderId          String?         @unique
+  razorpayPaymentId        String?         @unique
+  razorpaySubscriptionId   String?
+  razorpaySignature        String?
+  billingInvoiceId         String?
+  failureReason            String?
+  notes                    Json?
+  createdAt                DateTime        @default(now())
+  updatedAt                DateTime        @updatedAt
+  user                     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billingInvoice           BillingInvoice? @relation(fields: [billingInvoiceId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([plan, status])
+  @@index([razorpaySubscriptionId])
+  @@index([billingInvoiceId])
+}
+
+model RazorpayWebhookEvent {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  event       String
+  payload     Json
+  processedAt DateTime?
+  processingError String?
+  createdAt   DateTime @default(now())
+
+  @@index([event, createdAt])
+}
+
+model BillingInvoice {
+  id                     String          @id @default(cuid())
+  userId                 String
+  subscriptionId         String?
+  plan                   Plan
+  provider               BillingProvider @default(RAZORPAY)
+  status                 String          @default("created")
+  amount                 Int
+  currency               String          @default("INR")
+  receipt                String?
+  providerInvoiceId      String?         @unique
+  providerPaymentId      String?
+  providerOrderId        String?
+  providerSubscriptionId String?
+  shortUrl               String?
+  pdfUrl                 String?
+  billingStart           DateTime?
+  billingEnd             DateTime?
+  issuedAt               DateTime?
+  paidAt                 DateTime?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription           Subscription?   @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  payments               PaymentTransaction[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([providerSubscriptionId])
+  @@index([providerPaymentId])
+}
+
+model BillingRequest {
+  id        String               @id @default(cuid())
+  userId    String?
+  name      String
+  email     String
+  company   String?
+  plan      Plan
+  message   String?
+  status    BillingRequestStatus @default(PENDING)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  user      User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String?
+  message   String
+  rating    Int?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+}
+
+model ApiKey {
+  id         String     @id @default(cuid())
+  userId     String
+  name       String
+  keyHash    String     @unique
+  keyPrefix  String
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiUsage   ApiUsage[]
+
+  @@index([userId, revokedAt])
+}
+
+model ApiUsage {
+  id        String   @id @default(cuid())
+  userId    String?
+  apiKeyId  String?
+  route     String
+  count     Int      @default(1)
+  day       DateTime
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  apiKey    ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, route, day])
+  @@unique([apiKeyId, route, day])
+  @@index([route, day])
+  @@index([apiKeyId, day])
+}
+
+
+model AlertSubscription {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String   @unique
+  country   String?
+  scamTypes Json?
+  frequency String   @default("weekly")
+  source    String   @default("alerts")
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([country])
+  @@index([createdAt])
+}
+
+model IntegrationLead {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String
+  email     String
+  company   String?
+  useCase   String
+  volume    String?
+  source    String   @default("website")
+  status    String   @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([email])
+  @@index([userId, createdAt])
+}
