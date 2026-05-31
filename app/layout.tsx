@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: "Check suspicious links, WhatsApp messages, emails, QR codes, job offers, loan offers, shopping sellers, crypto offers and scam screenshots with TrustCheck AI.",
   keywords: ["scam checker", "phishing link checker", "whatsapp scam", "crypto scam", "fake job checker", "online fraud"],
   authors: [{ name: "TrustCheck AI" }],
+  verification: {
+    google: "t6vNWWPIElU-JxUI1qO1MUARshpmRQGlZrRC2oVNFqU", // Paste the code you copied from Google
+  },
   icons: {
     icon: "/icon.svg",
     shortcut: "/icon.svg",
