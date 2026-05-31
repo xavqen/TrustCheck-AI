@@ -1,10 +1,12 @@
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth"; // Importing your existing v5 auth setup
+
+// Initialize NextAuth with ONLY the Edge-compatible config
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-  
-  // In v5, the session/token is automatically attached to req.auth
   const session = req.auth;
 
   // 1. Dashboard & Settings Protection
